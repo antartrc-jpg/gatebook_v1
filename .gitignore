@@ -21,3 +21,8 @@ coverage/
 # Monorepo-spezifisch
 services/api/dist/
 packages/shared/dist/
+
+# Dependencies
+node_modules/
+**/node_modules/
+
