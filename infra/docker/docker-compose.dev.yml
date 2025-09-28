@@ -1,0 +1,321 @@
+# infra/docker/docker-compose.dev.yml
+
+
+# GateBook Enterprise · DEV Compose (W1)
+
+
+# Zweck: Lokale Infrastruktur für E2E-Flow der Welle 1:
+
+
+#   - PostgreSQL (Prisma-DB)
+
+
+#   - MailHog (SMTP + Web UI)
+
+
+# Aufruf:
+
+
+#   cd C:\Users\antar\Documents\gatebook_v1
+
+
+#   docker compose -f infra/docker/docker-compose.dev.yml up -d
+
+
+#   # Health:
+
+
+#   #  - API-Health (nach App-Start): http://localhost:4000/health
+
+
+#   #  - MailHog UI:                   http://localhost:8025
+
+
+
+
+
+
+
+
+
+
+name: gatebook-dev
+
+
+
+
+
+networks:
+
+
+  gb_dev:
+
+
+    name: gb_dev
+
+
+    driver: bridge
+
+
+
+
+
+volumes:
+
+
+  pgdata:
+
+
+    name: gatebook_pgdata
+
+
+
+
+
+services:
+
+
+  postgres:
+
+
+    image: postgres:16-alpine
+
+
+    container_name: gb_postgres
+
+
+    restart: unless-stopped
+
+
+    environment:
+
+
+      POSTGRES_USER: gatebook
+
+
+      POSTGRES_PASSWORD: gatebook
+
+
+      POSTGRES_DB: gatebook
+
+
+    ports:
+
+
+      - "5432:5432"
+
+
+    volumes:
+
+
+      - pgdata:/var/lib/postgresql/data
+
+
+    healthcheck:
+
+
+      test: ["CMD-SHELL", "pg_isready -U gatebook -d gatebook"]
+
+
+      interval: 5s
+
+
+      timeout: 3s
+
+
+      retries: 20
+
+
+      start_period: 5s
+
+
+    networks:
+
+
+      - gb_dev
+
+
+
+
+
+  mailhog:
+
+
+    image: mailhog/mailhog:latest
+
+
+    container_name: gb_mailhog
+
+
+    restart: unless-stopped
+
+
+    ports:
+
+
+      - "1025:1025"   # SMTP
+
+
+      - "8025:8025"   # Web UI
+
+
+    healthcheck:
+
+
+      test: ["CMD", "sh", "-c", "printf 'HELO local\r\nQUIT\r\n' | nc -w 2 127.0.0.1 1025 || exit 1"]
+
+
+      interval: 10s
+
+
+      timeout: 5s
+
+
+      retries: 12
+
+
+      start_period: 5s
+
+
+    networks:
+
+
+      - gb_dev
+
+
+
+
+
+# ------------------------------------------------------------------------------
+
+
+# Hinweise / Integration
+
+
+# ------------------------------------------------------------------------------
+
+
+# 1) API verbindet sich via:
+
+
+#    DATABASE_URL=postgresql://gatebook:gatebook@localhost:5432/gatebook?schema=public
+
+
+#    (siehe .env.example)
+
+
+#
+
+
+# 2) E-Mail Versand (DEV):
+
+
+#    SMTP_HOST=127.0.0.1
+
+
+#    SMTP_PORT=1025
+
+
+#    MAIL_FROM=no-reply@gatebook.local
+
+
+#    Web UI: http://localhost:8025
+
+
+#
+
+
+# 3) Apps (lokal starten):
+
+
+#    - API: services/api (Fastify) – benötigt Prisma Schema/Client
+
+
+#    - WEB: apps/web (Next.js)     – SSR-Flow /auth/* → /dashboard
+
+
+#
+
+
+# 4) Netz & Volumes:
+
+
+#    - Netzwerk 'gb_dev' für interne Kommunikation (optional nutzbar)
+
+
+#    - Volume 'gatebook_pgdata' hält DB-Daten persistent
+
+
+#
+
+
+# 5) Sicherheit:
+
+
+#    - DEV-Defaults (Passwörter/Ports) NICHT in PROD verwenden.
+
+
+#    - In PROD: externes DB/SMTP Setup, TLS/Secrets gemäß Richtlinien.
+
+
+#
+
+
+# ------------------------------------------------------------------------------
+
+
+# [Referenzblock – Kap. 17.4]
+
+
+# Quelle der Wahrheit (SSOT):
+
+
+# - Kap. 6 Datenbank-Baseline (PostgreSQL via Docker) · DEV-Setup
+
+
+# - Kap. 4.1 Registrierung/Onboarding (Mail im Verifikationsfluss)
+
+
+# - Kap. 18 Meta-Governance (Infra/Tooling spiegelt Vorgaben)
+
+
+#
+
+
+# Akzeptanz (W1):
+
+
+# - PostgreSQL 16 läuft unter localhost:5432 (Health: pg_isready) ✔
+
+
+# - MailHog SMTP :1025 & UI :8025 (Health via Netcat-Handshake) ✔
+
+
+# - Unabhängig von App-Builds nutzbar; keine App-Container in W1 (lokal per pnpm) ✔
+
+
+#
+
+
+# Orchestrator-Handover – Einzeiler:
+
+
+# powershell -NoProfile -ExecutionPolicy Bypass -File scripts/orch/handover.ps1 `
+
+
+#   -Chat OPS `
+
+
+#   -Gate "Welle 1" `
+
+
+#   -Status "delivered — DEV Compose (Postgres+MailHog) bereit" `
+
+
+#   -Deliverable "infra/docker/docker-compose.dev.yml" `
+
+
+#   -Summary "DB+SMTP für E2E; Healthchecks; Ports 5432/1025/8025"
+
+
+

@@ -1,0 +1,72 @@
+# infra/dev/docker-compose.yaml
+# =============================================================================
+# DEPRECATED — Bitte künftig **infra/docker/docker-compose.dev.yml** verwenden.
+# Grund: WO-OPS-5 definiert den offiziellen DEV-Stack (postgres, mailhog, api, web).
+# Diese Datei bleibt vorübergehend für Rückwärtskompatibilität bestehen und
+# wird nach der Übergangsphase entfernt. Funktionsumfang: **nur** Postgres + MailHog.
+# =============================================================================
+#
+# Nutzung (weiterhin möglich, aber veraltet):
+#   docker compose -f infra/dev/docker-compose.yaml up -d
+#
+# Offizieller DEV-Stack (empfohlen):
+#   docker compose -f infra/docker/docker-compose.dev.yml up -d
+#
+# Danach für Prisma:
+#   pnpm -C services/api exec prisma generate
+#   pnpm -C services/api exec prisma migrate dev --name init
+#
+# MailHog UI: http://localhost:8025
+# Postgres:   postgres://gatebook:gatebook@localhost:5432/gatebook?schema=public
+
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: gatebook-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: gatebook
+      POSTGRES_PASSWORD: gatebook
+      POSTGRES_DB: gatebook
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  mailhog:
+    image: mailhog/mailhog:v1.0.1
+    container_name: gatebook-mailhog
+    restart: unless-stopped
+    ports:
+      - "1025:1025" # SMTP (nur lokal)
+      - "8025:8025" # Web UI
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8025/ >/dev/null 2>&1 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+
+volumes:
+  pgdata: {}
+
+# -----------------------------------------------------------------------------
+# [Referenzblock – Kap. 17.4]
+# Datum: 2025-09-17
+# Änderung gemäß Empfehlung A (OPS):
+#   - Kennzeichnung dieser Datei als DEPRECATED.
+#   - Verweis auf offiziellen DEV-Stack: infra/docker/docker-compose.dev.yml (WO-OPS-5).
+# SSOT-Bezug (W1):
+#   - Dev-Infra: PostgreSQL + MailHog (hier weiterhin verfügbar).
+#   - Offizieller Stack inkl. api/web liegt unter infra/docker/docker-compose.dev.yml.
+# SemVer (Kap. 28):
+#   - Patch (Doc/Comment-Only; keine Verhaltensänderung der laufenden Services).
+# -----------------------------------------------------------------------------

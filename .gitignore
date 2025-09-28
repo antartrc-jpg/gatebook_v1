@@ -1,0 +1,19 @@
+node_modules
+.trash/
+*.bak
+*.log
+.next/
+dist/
+build/
+out/
+coverage/
+.turbo/
+.cache/
+.vercel/
+scripts/out/*.json
+
+# envs
+.env
+.env.local
+apps/web/.env.local
+services/api/.env

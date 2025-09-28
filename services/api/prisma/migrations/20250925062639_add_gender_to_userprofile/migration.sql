@@ -1,0 +1,8 @@
+-- AlterTable
+ALTER TABLE "public"."user_profiles" ALTER COLUMN "first_name" DROP NOT NULL,
+ALTER COLUMN "last_name" DROP NOT NULL,
+ALTER COLUMN "birth_date" DROP NOT NULL,
+ALTER COLUMN "street" DROP NOT NULL,
+ALTER COLUMN "postal_code" DROP NOT NULL,
+ALTER COLUMN "city" DROP NOT NULL,
+ALTER COLUMN "country" DROP NOT NULL;

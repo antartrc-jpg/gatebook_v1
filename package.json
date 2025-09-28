@@ -1,0 +1,41 @@
+{
+  "name": "gatebook_v1",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "services/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "pnpm -C services/api dev",
+    "dev:web": "pnpm -C apps/web dev",
+    "dev:both": "pnpm -C services/api dev & pnpm -C apps/web dev",
+    "build": "pnpm -C services/api build && pnpm -C apps/web build",
+    "typecheck": "pnpm -C services/api typecheck && pnpm -C apps/web typecheck",
+    "lint": "pnpm -C services/api lint || exit 0",
+    "prisma:generate": "pnpm -C services/api prisma:generate",
+    "prisma:migrate": "pnpm -C services/api prisma:migrate",
+    "prisma:reset": "pnpm -C services/api prisma:reset",
+    "prisma:validate": "pnpm -C services/api prisma:validate",
+    "seed": "pnpm -C services/api seed",
+    "db:reseed": "pnpm -C services/api db:reseed"
+  },
+  "devDependencies": {
+    "@types/node": "^24.5.2",
+    "@types/react": "18.2.66",
+    "@types/react-dom": "^19.1.9",
+    "typescript": "^5.9.2"
+  },
+  "packageManager": "pnpm@10.17.1+sha512.17c560fca4867ae9473a3899ad84a88334914f379be46d455cbf92e5cf4b39d34985d452d2583baf19967fa76cb5c17bc9e245529d0b98745721aa7200ecaf7a",
+  "dependencies": {
+    "@fastify/cookie": "10.0.1",
+    "@fastify/cors": "10.0.1",
+    "@fastify/helmet": "13.0.0",
+    "@prisma/client": "6.16.2",
+    "fastify": "5.0.0",
+    "next": "^15.5.4",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "zod": "3.25.76"
+  }
+}

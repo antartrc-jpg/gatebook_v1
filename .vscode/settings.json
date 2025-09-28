@@ -1,0 +1,13 @@
+{
+  // CSS-Linter: @tailwind/@apply nicht anmeckern
+  "css.lint.unknownAtRules": "ignore",
+  "scss.lint.unknownAtRules": "ignore",
+  "less.lint.unknownAtRules": "ignore",
+
+  // IntelliSense für Tailwind (falls Ext. installiert)
+  "files.associations": {
+    "**/apps/web/app/**/*.css": "tailwindcss"
+  },
+  "tailwindCSS.experimental.configFile": "apps/web/tailwind.config.ts",
+  "tailwindCSS.emmetCompletions": true
+}

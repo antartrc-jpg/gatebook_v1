@@ -1,0 +1,293 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/* ——— Enums ——— */
+enum Role {
+  user
+  viewer
+  owner
+  admin
+  deputy
+  superadmin
+}
+
+enum LicenseStatus {
+  active
+  inactive
+}
+
+/* Unternehmens-Erweiterung */
+enum OrgStatus {
+  active
+  trial
+  suspended
+  closed
+}
+
+enum OrgPlan {
+  free
+  pro
+  enterprise
+}
+
+enum LegalForm {
+  gmbh
+  ug
+  ag
+  kg
+  ohg
+  ek
+  gbr
+  ev
+  stiftung
+  llc
+  inc
+  plc
+  sarl
+  sas
+  srl
+  bv
+  nv
+  oy
+  ab
+  kft
+  spa
+  other
+}
+
+enum AddressKind {
+  headquarters
+  billing
+  shipping
+}
+
+/* ——— Erweiterung ——— */
+enum Gender {
+  male
+  female
+  diverse
+  unspecified
+}
+
+/* ——— Modelle ——— */
+
+model User {
+  id               String    @id @default(cuid())
+  email            String    @unique
+  passwordHash     String    @map("password_hash")
+  emailVerifiedAt  DateTime? @map("email_verified_at")
+  role             Role      @default(user)
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt      @map("updated_at")
+
+  // 1:1 – optionales Profil
+  profile          UserProfile?
+  profileCompleted Boolean   @default(false) @map("profile_completed")
+
+  // Sessions/Verification
+  sessions           Session[]
+  verificationTokens VerificationToken[]
+
+  // Organisationen
+  organizationsOwned Organization[]        @relation("OwnerOrganizations")
+  orgMemberships     OrganizationMember[]  // Mitgliedschaften
+
+  @@index([role], map: "idx_user_role")
+  @@map("users")
+}
+
+model UserProfile {
+  userId     String    @id @map("user_id")
+  title      String?
+  firstName  String?   @map("first_name")
+  lastName   String?   @map("last_name")
+  birthDate  DateTime? @map("birth_date")
+  street     String?
+  postalCode String?   @map("postal_code")
+  city       String?
+  country    String?   @default("DE")
+  gender     Gender?   @default(unspecified)
+  avatarUrl  String?   @map("avatar_url")
+
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt      @map("updated_at")
+
+  @@map("user_profiles")
+  @@index([lastName], map: "idx_user_profiles_lastname")
+}
+
+model VerificationToken {
+  id         String    @id @default(cuid())
+  userId     String    @map("user_id")
+  token      String    @unique
+  expiresAt  DateTime  @map("expires_at")
+  consumedAt DateTime? @map("consumed_at")
+  createdAt  DateTime  @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@index([userId], map: "idx_verification_user")
+  @@index([expiresAt], map: "idx_verification_expires")
+  @@map("verification_tokens")
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  tokenHash String   @unique @map("token_hash")
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt      @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@index([userId], map: "idx_session_user")
+  @@index([expiresAt], map: "idx_session_expires")
+  @@map("sessions")
+}
+
+/* ——— Unternehmen (stark erweitert) ——— */
+model Organization {
+  id       String  @id @default(cuid())
+  name     String  @unique                        // Display-/Markenname
+  slug     String? @unique                        // hübsche URL (optional)
+  ownerId  String  @map("owner_id")
+
+  // Rechtliches
+  legalName  String?
+  legalForm  LegalForm?
+  regCountry String?                              // ISO-3166-1 alpha-2
+  regNumber  String?                              // HRB/Company No.
+  vatId      String?                              // USt-Id/VAT
+  taxId      String?                              // Steuernummer
+
+  // Kontakt / Präsenz
+  website   String?
+  email     String?
+  phone     String?
+  logoUrl   String?   @map("logo_url")
+  timezone  String?   @default("Europe/Berlin")
+
+  // Betriebszustand / Plan
+  status    OrgStatus @default(active)
+  plan      OrgPlan   @default(free)
+
+  // Relationen
+  owner     User                  @relation("OwnerOrganizations", fields: [ownerId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  licenses  License[]
+  invites   Invitation[]
+  members   OrganizationMember[]
+  addresses OrganizationAddress[]
+  domains   OrganizationDomain[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt      @map("updated_at")
+
+  @@index([ownerId], map: "idx_org_owner")
+  @@index([status],  map: "idx_org_status")
+  @@map("organizations")
+}
+
+model License {
+  id      String        @id @default(cuid())
+  orgId   String        @map("org_id")
+  status  LicenseStatus
+  validTo DateTime?
+
+  org Organization @relation(fields: [orgId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt      @map("updated_at")
+
+  @@index([orgId], map: "idx_license_org")
+  @@index([status], map: "idx_license_status")
+  @@index([validTo], map: "idx_license_validto")
+  @@map("licenses")
+}
+
+model Invitation {
+  id         String    @id @default(cuid())
+  orgId      String    @map("org_id")
+  email      String
+  role       Role
+  token      String    @unique
+  expiresAt  DateTime  @map("expires_at")
+  acceptedAt DateTime? @map("accepted_at") // <-- NEU
+
+  org Organization @relation(fields: [orgId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt      @map("updated_at")
+
+  @@index([orgId], map: "idx_invitation_org")
+  @@index([email, expiresAt], map: "idx_invitation_email_expires") // häufige Query: offene Invites für Email
+  @@index([acceptedAt], map: "idx_invitation_accepted")            // für accepted-Filter
+  @@unique([orgId, email], map: "uq_invitation_org_email")
+  @@map("invitations")
+}
+
+model Setting {
+  key       String   @id
+  value     Json
+  updatedAt DateTime @updatedAt
+}
+
+/* ——— Mitgliedschaften ——— */
+model OrganizationMember {
+  id        String   @id @default(cuid())
+  orgId     String   @map("org_id")
+  userId    String   @map("user_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt      @map("updated_at")
+
+  org  Organization @relation(fields: [orgId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  user User         @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@unique([orgId, userId], map: "uq_org_member_org_user")
+  @@index([userId], map: "idx_org_member_user")
+  @@map("organization_members")
+}
+
+/* ——— Adressen je Unternehmen (max. 1 pro Typ) ——— */
+model OrganizationAddress {
+  id         String      @id @default(cuid())
+  orgId      String      @map("org_id")
+  kind       AddressKind
+  street     String
+  postalCode String      @map("postal_code")
+  city       String
+  region     String?
+  country    String      // ISO-3166-1 alpha-2
+
+  createdAt  DateTime    @default(now()) @map("created_at")
+  updatedAt  DateTime    @updatedAt      @map("updated_at")
+
+  org Organization @relation(fields: [orgId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@unique([orgId, kind], map: "uq_org_address_kind")
+  @@index([orgId], map: "idx_org_address_org")
+  @@map("org_addresses")
+}
+
+/* ——— Verifizierte Domains ——— */
+model OrganizationDomain {
+  id        String   @id @default(cuid())
+  orgId     String   @map("org_id")
+  domain    String
+  verified  Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt      @map("updated_at")
+
+  org Organization @relation(fields: [orgId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@unique([domain], map: "uq_org_domain")
+  @@index([orgId], map: "idx_org_domain_org")
+  @@map("org_domains")
+}

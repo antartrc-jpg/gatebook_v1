@@ -1,0 +1,78 @@
+<!-- services/api/src/mail/templates/verify-email.html -->
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="x-apple-disable-message-reformatting" />
+    <meta name="format-detection" content="telephone=no,address=no,email=no,date=no,url=no" />
+    <!-- Dark-Mode Hinweise als META (E-Mail-Client freundlich) -->
+    <meta name="color-scheme" content="light dark" />
+    <meta name="supported-color-schemes" content="light dark" />
+    <title>E-Mail-Adresse bestätigen</title>
+    <style>
+      /* Minimal-inlined styles for broad client support */
+      :root { color-scheme: light dark; }
+      body { margin:0; padding:0; background:#f6f7f9; font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif; }
+      .wrap { max-width: 600px; margin: 0 auto; padding: 24px; }
+      .card { background:#ffffff; border-radius:12px; padding:24px; box-shadow: 0 1px 2px rgba(0,0,0,0.06); }
+      h1 { font-size: 20px; margin: 0 0 8px; }
+      p { margin: 0 0 12px; line-height: 1.5; color:#111827; }
+      .btn { display:inline-block; padding:12px 18px; border-radius:10px; text-decoration:none; background:#111827; color:#ffffff !important; font-weight:600; }
+      .link { word-break: break-all; color:#111827; }
+      .muted { color:#6b7280; font-size:12px; margin-top: 16px; }
+      @media (prefers-color-scheme: dark) {
+        body { background:#0b0c10; }
+        .card { background:#111418; }
+        p, .link { color:#e5e7eb; }
+        .btn { background:#e5e7eb; color:#111418 !important; }
+        .muted { color:#9ca3af; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="card">
+        <h1>Bitte bestätige deine E-Mail-Adresse</h1>
+        <p>Hallo,</p>
+        <p>um die Registrierung abzuschließen, bestätige bitte deine E-Mail-Adresse über den folgenden Button.</p>
+
+        <p style="margin: 18px 0;">
+          <!-- {{LINK}} verweist auf /(auth)/verify/[token] · gerenderter Pfad ist /verify/[token] -->
+          <a class="btn" href="{{LINK}}" target="_blank" rel="noopener" aria-label="E-Mail-Adresse bestätigen">
+            E-Mail-Adresse bestätigen
+          </a>
+        </p>
+
+        <p>Falls der Button nicht funktioniert, kannst du den folgenden Link kopieren und im Browser öffnen:</p>
+        <p class="link">{{LINK}}</p>
+
+        <p class="muted">
+          Der Bestätigungslink führt zur Seite
+          <code>/(auth)/verify/[token]</code>
+          (Route-Group, im Browser als <code>/verify/[token]</code> sichtbar) und kann aus Sicherheitsgründen nur einmal verwendet werden.
+          Wenn du diese Anfrage nicht selbst gestartet hast, kannst du diese Nachricht ignorieren.
+        </p>
+      </div>
+    </div>
+
+    <!--
+      [Referenzblock – Kap. 17.4]
+      Domäne: API · Work Order: WO-API-2 (Verify-Mail HTML)
+      Akzeptanz:
+      - Neutraler Ton (Kap. 14.1); keine sensiblen Daten, keine internen IDs.
+      - Link-Platzhalter {{LINK}} → /(auth)/verify/[token] (Next.js Route Group; realer Pfad /verify/[token]).
+      - Sibling-Template TXT: services/api/src/mail/templates/verify-email.txt (gleiches Wording).
+      OPS:
+      - Versand via SMTP (MailHog) über .env: SMTP_HOST/SMTP_PORT, optional SMTP_USER/SMTP_PASS; Absender MAIL_FROM.
+      SSOT-Verweise: Kap. 13.3 (Verifikation, TTL 24h), Kap. 14.1 (Mikrotexte).
+
+      Orchestrator-Handover (Einzeiler)
+      powershell -NoProfile -ExecutionPolicy Bypass -File scripts/orch/update_handover.ps1 `
+        -Chat API `
+        -Gate "Welle 1" `
+        -Status "delivered — Verify-Mail HTML-Template bereit" `
+        -Deliverable "services/api/src/mail/templates/verify-email.html" `
+        -Summary "Neutraler Text, {{LINK}}-Platzhalter, Dark-Mode-freundlich"
+    -->
+  </body>
+</html>

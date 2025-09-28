@@ -1,0 +1,14 @@
+Hallo {{EMAIL}},
+
+bitte bestätige deine E-Mail-Adresse, um die Registrierung abzuschließen.
+
+Öffne dazu diesen Link:
+{{LINK}}
+
+Falls der Link nicht klickbar ist, kopiere ihn in die Adresszeile deines Browsers.
+Der Bestätigungslink führt zur Seite /(auth)/verify/[token] und kann aus Sicherheitsgründen nur einmal verwendet werden.
+
+Wenn du diese Anfrage nicht selbst gestartet hast, kannst du diese Nachricht ignorieren.
+
+Vielen Dank
+GateBook Enterprise

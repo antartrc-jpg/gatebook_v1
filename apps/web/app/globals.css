@@ -1,0 +1,206 @@
+/* FILE: apps/web/app/globals.css
+   GateBook Enterprise · WEB — Globale Styles & Token-Bridge
+   Zweck
+   • CSS-Variablen (Design-Tokens) mit sinnvollen Defaults (Light/Dark).
+   • Bridge auf shadcn/Tailwind-Farbnamen (background/foreground/primary/…).
+   • Sofort sichtbares Feedback (Buttons/Inputs) ohne FOUC.
+   Hinweis
+   • Tailwind muss Farben wie üblich auf hsl(var(--…)) mappen.
+   • Import NUR im Root-Layout: apps/web/app/layout.tsx → import "./globals.css"
+*/
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ────────────────────────────────────────────────────────────────────────────
+   1) Design-Tokens (HSL-Tripel ohne hsl())
+   Server-Overrides: <style id="theme-overrides"> … </style>
+   Draft-Layer:      <style id="theme-overrides-draft"> … </style>
+──────────────────────────────────────────────────────────────────────────── */
+
+:root {
+  /* Oberfläche & Text (Light) */
+  --bg: 0 0% 100%;
+  --fg: 222 47% 11%;
+
+  /* Karten */
+  --card: 0 0% 100%;
+  --card-foreground: 222 47% 11%;
+
+  /* Gedämpfte Flächen/Text */
+  --muted: 210 40% 96%;
+  --muted-fg: 215 16% 47%;
+
+  /* Rahmen */
+  --border: 214 32% 91%;
+
+  /* Marke */
+  --brand: 221 83% 53%;
+  --brand-foreground: 210 40% 98%;
+
+  /* Typografie & Radius */
+  --font-sans: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue",
+    Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+  --radius: 12px;
+
+  color-scheme: light;
+}
+
+/* Dark-Defaults (aktiv über .dark am <html> ODER data-theme="dark") */
+:root.dark,
+:root[data-theme="dark"] {
+  --bg: 222 47% 11%;
+  --fg: 210 40% 98%;
+
+  --card: 222 47% 12%;
+  --card-foreground: 210 40% 98%;
+
+  --muted: 217 33% 17%;
+  --muted-fg: 215 20% 65%;
+
+  --border: 217 19% 27%;
+
+  --brand: 221 83% 60%;
+  --brand-foreground: 222 47% 11%;
+
+  color-scheme: dark;
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+   2) Token-Bridge → Tailwind/shadcn Variablen
+   (Tailwind theme.colors.* → hsl(var(--…)))
+──────────────────────────────────────────────────────────────────────────── */
+
+:root,
+:root.dark,
+:root[data-theme="dark"] {
+  /* Oberflächen & Text */
+  --background: var(--bg);
+  --foreground: var(--fg);
+
+  /* Karten */
+  --card: var(--card);
+  --card-foreground: var(--card-foreground);
+
+  /* Muted */
+  --muted: var(--muted);
+  --muted-foreground: var(--muted-fg);
+
+  /* Rahmenfarbe */
+  --border: var(--border);
+
+  /* Marke als Primary */
+  --primary: var(--brand);
+  --primary-foreground: var(--brand-foreground);
+
+  /* Optional – aktivieren wenn im Design vorgesehen:
+  --secondary: var(--muted);
+  --secondary-foreground: var(--fg);
+  --accent: var(--brand);
+  --accent-foreground: var(--brand-foreground);
+  --ring: var(--brand);
+  */
+
+  /* Radius */
+  --radius: var(--radius);
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+   3) Base-Resets & Typografie
+──────────────────────────────────────────────────────────────────────────── */
+
+html, body {
+  height: 100%;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  @apply bg-background text-foreground antialiased;
+  font-family: var(--font-sans);
+}
+
+/* Fokus-Ringe konsistent sichtbar (auch High-Contrast) */
+:where(a, button, input, textarea, select):focus-visible {
+  outline: 2px solid hsl(var(--primary));
+  outline-offset: 2px;
+}
+
+/* Reduziere Motion, wenn gewünscht */
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; }
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+   4) Komponenten-Pragmatik (sichtbares Feedback)
+──────────────────────────────────────────────────────────────────────────── */
+
+/* Karten-/Panel-Optik */
+.gb-card {
+  @apply rounded-2xl border border-border bg-card text-card-foreground shadow-sm;
+}
+
+/* Badges */
+.gb-badge-brand {
+  border: 1px solid hsl(var(--brand));
+  color: hsl(var(--brand));
+  border-radius: 9999px;
+  padding: 2px 10px;
+  font-size: 12px;
+  line-height: 18px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.gb-badge-brand::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  background-color: hsl(var(--brand));
+  border-radius: 9999px;
+  display: inline-block;
+}
+.gb-badge-border {
+  border: 1px solid hsl(var(--border));
+  color: hsl(var(--muted-fg));
+  border-radius: 9999px;
+  padding: 2px 10px;
+  font-size: 12px;
+  line-height: 18px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Formular-Feedback (Inputs reagieren sofort) */
+@layer base {
+  input, select, textarea {
+    @apply bg-background text-foreground border border-border rounded-lg;
+  }
+  input::placeholder, textarea::placeholder {
+    @apply text-muted-foreground;
+  }
+  button {
+    @apply transition-[background-color,box-shadow] duration-150;
+  }
+  .btn-primary {
+    @apply bg-primary text-primary-foreground hover:opacity-90 active:opacity-95;
+  }
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+   5) Preview-Utilities (Admin-Drawer)
+──────────────────────────────────────────────────────────────────────────── */
+
+[data-preview] .border {
+  border-width: var(--gb-preview-border-w, 1px) !important;
+}
+[data-preview] h1, [data-preview] .h1 { font-size: calc(1.5rem * var(--gb-preview-h-scale, 1)); }
+[data-preview] h2, [data-preview] .h2 { font-size: calc(1.25rem * var(--gb-preview-h-scale, 1)); }
+[data-preview] h3, [data-preview] .h3 { font-size: calc(1.125rem * var(--gb-preview-h-scale, 1)); }
+
+/* ────────────────────────────────────────────────────────────────────────────
+   Referenz
+   – UI-Tokenisierung, SSR-Integration, Theme-Overrides.
+──────────────────────────────────────────────────────────────────────────── */

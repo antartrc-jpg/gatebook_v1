@@ -1,0 +1,43 @@
+:root {
+  /* Brand */
+  --brand: 221 83% 53%;
+  --brand-foreground: 210 40% 98%;
+
+  /* Light (Default) */
+  --bg: 0 0% 100%;
+  --fg: 222.2 47.4% 11.2%;
+
+  /* Oberflächen – WICHTIG für Karten/Dialoge/Tooltips etc. */
+  --card: 0 0% 100%;
+  --card-foreground: var(--fg);
+  --popover: 0 0% 100%;
+  --popover-foreground: var(--fg);
+
+  /* States/Muted/Border */
+  --muted: 210 40% 96%;
+  --muted-fg: 215.4 16.3% 46.9%;
+  --border: 214.3 31.8% 91.4%;
+  --input: var(--border);
+  --ring: var(--brand);
+
+  /* Typografie & Radius */
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
+  --radius: 16px;
+}
+
+/* Dark – kontrastreich: Karten etwas heller als Hintergrund */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: 222.2 84% 4.9%;           /* sehr dunkel */
+    --fg: 210 40% 98%;              /* sehr hell */
+    --card: 222.2 47% 11%;          /* leicht heller als bg */
+    --card-foreground: 210 40% 98%;
+    --popover: var(--card);
+    --popover-foreground: var(--card-foreground);
+    --muted: 217.2 32.6% 17.5%;
+    --muted-fg: 215 20.2% 65.1%;
+    --border: 217.2 32.6% 17.5%;
+    --input: var(--border);
+    --ring: var(--brand);
+  }
+}
