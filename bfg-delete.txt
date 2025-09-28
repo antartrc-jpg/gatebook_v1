@@ -1,0 +1,11 @@
+.env
+.env.local
+apps/web/.env.local
+services/api/.env
+*.bak
+*.log
+scripts/out
+.next
+apps/web/.next
+services/api/dist
+packages/*/dist
