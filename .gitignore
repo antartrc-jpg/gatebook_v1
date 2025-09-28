@@ -20,3 +20,18 @@ services/api/.env
 # build outputs from packages
 packages/*/dist/
 services/api/dist/
+@
+.env
+.env.local
+*.bak
+*.log
+.next/
+dist/
+build/
+out/
+coverage/
+.turbo/
+.cache/
+.vercel/
+scripts/out/
+@
