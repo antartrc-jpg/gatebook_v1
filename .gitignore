@@ -27,3 +27,4 @@ node_modules/
 **/node_modules/
 
 path/zur/grossen/datei
+.bfg-report/
