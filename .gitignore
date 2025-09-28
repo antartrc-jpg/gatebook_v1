@@ -1,4 +1,3 @@
-node_modules
 .trash/
 *.bak
 *.log
@@ -17,3 +16,7 @@ scripts/out/*.json
 .env.local
 apps/web/.env.local
 services/api/.env
+
+# build outputs from packages
+packages/*/dist/
+services/api/dist/
